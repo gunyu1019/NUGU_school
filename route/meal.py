@@ -109,6 +109,15 @@ async def meal(request):
         data[0],
         MLSV_YMD=dateV.datetime.strftime('%Y%m%d'))
 
+    if json_data is school_exception.NotFound:
+        return json_response(
+            exception("meal_not_found1", version),
+            status=200)
+    elif json_data is school_exception.Internal_Server_Error:
+        return json_response(
+            exception("backend_proxy_error", version),
+            status=200)
+
     listItems = []
     if display:
         date_inform = {}
@@ -156,9 +165,8 @@ async def meal(request):
 
         for i in dp_json_data.get('mealServiceDietInfo')[1].get("row"):
             if i.get('MMEAL_SC_NM') == parameters.get('MEAL_TYPE').get('value'):
-                if i.get("MLSV_YMD") not in date_inform:
-                    continue
-                date_inform[i.get("MLSV_YMD")] = i
+                if i.get("MLSV_YMD") in date_inform.keys():
+                    date_inform[i.get("MLSV_YMD")] = i
 
         for i in range(int(firstDay), int(lastDay)):
             if str(i) == dateV.datetime.strftime('%Y%m%d'):
@@ -189,15 +197,6 @@ async def meal(request):
                     "text": f"{read_food_display(cacheDT.get('DDISH_NM'))}"
                 }]
             })
-
-    if json_data is school_exception.NotFound:
-        return json_response(
-            exception("meal_not_found1", version),
-            status=200)
-    elif json_data is school_exception.Internal_Server_Error:
-        return json_response(
-            exception("backend_proxy_error", version),
-            status=200)
 
     food = None
     for i in json_data.get('mealServiceDietInfo')[1].get("row"):

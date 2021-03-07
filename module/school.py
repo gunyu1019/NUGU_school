@@ -16,15 +16,10 @@ class school:
         self.token = parser.get('TOKEN', 'token')
         self.base = "https://open.neis.go.kr/hub"
 
-        self.default_header = {
-            'Type': 'json',
-            'KEY': f'{self.token}'
-        }
         self.school_data = None
 
     async def school(self, location: str = None):
-        header = self.default_header
-        header['SCHUL_NM'] = self.school_nm
+        header = {'Type': 'json', 'KEY': f'{self.token}', 'SCHUL_NM': self.school_nm}
 
         resp = await requests("GET", f"{self.base}/schoolInfo", params=header)
         if isinstance(resp.data, str):
@@ -55,9 +50,8 @@ class school:
         return result
 
     async def meal(self, school_data: dict, **kwargs):
-        header = self.default_header
-        header['ATPT_OFCDC_SC_CODE'] = school_data.get('ATPT_OFCDC_SC_CODE')
-        header['SD_SCHUL_CODE'] = school_data.get('SD_SCHUL_CODE')
+        header = {'Type': 'json', 'KEY': f'{self.token}', 'ATPT_OFCDC_SC_CODE': school_data.get('ATPT_OFCDC_SC_CODE'),
+                  'SD_SCHUL_CODE': school_data.get('SD_SCHUL_CODE')}
         header.update(**kwargs)
 
         resp2 = await requests("GET", f"{self.base}/mealServiceDietInfo", params=header)
@@ -77,11 +71,9 @@ class school:
         return json2
 
     async def timetable(self, school_data, GRADE, CLASS, **kwargs):
-        header = self.default_header
-        header['ATPT_OFCDC_SC_CODE'] = school_data.get('ATPT_OFCDC_SC_CODE')
-        header['SD_SCHUL_CODE'] = school_data.get('SD_SCHUL_CODE')
-        header['GRADE'] = GRADE.rstrip("학년")
-        header['CLASS_NM'] = CLASS.rstrip("반")
+        header = {'Type': 'json', 'KEY': f'{self.token}', 'ATPT_OFCDC_SC_CODE': school_data.get('ATPT_OFCDC_SC_CODE'),
+                  'SD_SCHUL_CODE': school_data.get('SD_SCHUL_CODE'), 'GRADE': GRADE.rstrip("학년"),
+                  'CLASS_NM': CLASS.rstrip("반")}
         header.update(**kwargs)
 
         type_nm = school_data.get('SCHUL_KND_SC_NM')
