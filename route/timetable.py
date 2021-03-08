@@ -12,6 +12,7 @@ async def timetable(request):
     parameters = await request.json()
     action = parameters.get('action')
     version = parameters.get('version')
+    context = parameters.get('context')
 
     if "parameters" in action or action is not None:
         parameters = action.get('parameters')
@@ -19,6 +20,15 @@ async def timetable(request):
             return forbidden
     else:
         return forbidden
+
+    display = False
+    if context is not None:
+        interface = context.get("supportedInterfaces")
+        if "Display" in interface:
+            display = True
+            display_version = interface.get("Display").get("version")
+            display_token = interface.get("Display").get("token")
+            playServiceId = interface.get("Display").get("playServiceId")
 
     school_nm = parameters.get('TIMETABLE_SCHOOL_NM').get('value')
     sc_m = school(school_nm)
@@ -66,6 +76,7 @@ async def timetable(request):
                 "area_candidate": area_candidate.replace(",", "", 1)
             }
             return json_response(json_data, status=200)
+    SCHUL_NM = data[0]['SCHUL_NM']
 
     if "TIMETABLE_DT_2" in parameters:
         dateV = date(
@@ -82,8 +93,8 @@ async def timetable(request):
     json_data = await sc_m.timetable(
         data[0],
         ALL_TI_YMD=dateV.datetime.strftime('%Y%m%d'),
-        CLASS=parameters.get("TIMETABLE_CLASS").get("value"),
-        GRADE=parameters.get("TIMETABLE_GRADE").get("value")
+        CLASS=parameters.get("TIMETABLE_CLASS").get("value").rstrip("반"),
+        GRADE=parameters.get("TIMETABLE_GRADE").get("value").rstrip("학년")
     )
 
     if json_data is school_exception.NotFound:
@@ -119,5 +130,40 @@ async def timetable(request):
         }
     }
 #   Capability Interface 처리
+    if display:
+        count = 1
+        listItems = []
+        for i in table:
+            listItems.append({
+                "token": display_token,
+                "header": {
+                    "text": f"{count} 교시"
+                },
+                "body": {
+                    "text": f"{i}"
+                }
+            })
+            count += 1
+
+        data['directives'] = [{
+            "type": "Display.TextList1",
+            "version": display_version,
+            "playServiceId": playServiceId,
+            "token": display_token,
+            "title": {
+                "logo": {
+                    "sources": [
+                        {
+                            "url": "http://someurl.com/name.png"
+                        }
+                    ]
+                },
+                "text": {
+                    "text": f"{SCHUL_NM}의 {parameters.get('TIMETABLE_CLASS').get('value')} {parameters.get('TIMETABLE_CLASS').get('value')}급식 정보"
+                }
+            },
+            "badgeNumber": "False",
+            "listItems": listItems,
+        }]
 
     return json_response(data, status=200)
