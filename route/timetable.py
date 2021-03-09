@@ -64,7 +64,8 @@ async def timetable(request):
             location_i = i.get('ORG_RDNMA').split()
             if location_i[0] not in locate:
                 locate[location_i[0]] = list()
-            locate[location_i[0]].append(location_i[1])
+            if location_i[1] not in locate[location_i[0]]:
+                locate[location_i[0]].append(location_i[1])
 
         if len(locate) > 1:
             json_data = exception("regional_redundancy_error", version)
@@ -154,15 +155,15 @@ async def timetable(request):
                 "logo": {
                     "sources": [
                         {
-                            "url": "http://someurl.com/name.png"
+                            "url": "https://yhs.kr/api/nugu/icon"
                         }
                     ]
                 },
                 "text": {
-                    "text": f"{SCHUL_NM}의 {parameters.get('TIMETABLE_CLASS').get('value')} {parameters.get('TIMETABLE_CLASS').get('value')}급식 정보"
+                    "text": f"{SCHUL_NM} {parameters.get('TIMETABLE_CLASS').get('value')} {parameters.get('TIMETABLE_CLASS').get('value')}의 시간표 정보"
                 }
             },
-            "badgeNumber": "False",
+            "badgeNumber": "false",
             "listItems": listItems,
         }]
 

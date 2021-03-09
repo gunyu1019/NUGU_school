@@ -79,7 +79,8 @@ async def meal(request):
             location_i = i.get('ORG_RDNMA').split()
             if location_i[0] not in locate:
                 locate[location_i[0]] = list()
-            locate[location_i[0]].append(location_i[1])
+            if location_i[1] not in locate[location_i[0]]:
+                locate[location_i[0]].append(location_i[1])
 
         if len(locate) > 1:
             json_data = exception("regional_redundancy_error", version)
@@ -227,7 +228,7 @@ async def meal(request):
                 "logo": {
                     "sources": [
                         {
-                            "url": "http://someurl.com/name.png"
+                            "url": "https://yhs.kr/api/nugu/icon"
                         }
                     ]
                 },
@@ -235,7 +236,7 @@ async def meal(request):
                     "text": f"{SCHUL_NM}의 급식 정보"
                 }
             },
-            "badgeNumber": "False",
+            "badgeNumber": "false",
             "listItems": listItems,
             "caption": "알레르기 정보: 1.난류, 2.우유, 3.메밀, 4.땅콩, 5.대두, 6.밀, 7.고등어, 8.게, 9.새우, 10.돼지고기, 11.복숭아, 12.토마토, 13.아황산염, 14.호두, 15.닭고기, 16.쇠고기, 17.오징어, 18.조개류(굴,전복,홍합 등)"
         }]
